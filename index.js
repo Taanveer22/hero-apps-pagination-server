@@ -76,17 +76,10 @@ app.get('/apps', async (req, res) => {
   }
 });
 
-app.get('/apps/:id', async (req, res) => {
+app.get('/apps/install', async (req, res) => {
   try {
-    const appId = req.params.id;
-
-    if (appId.length != 24) {
-      res.status(400).json({ error: 'Invalid ID' });
-      return;
-    }
-    const query = new ObjectId(appId);
-    const app = await appsCollection.findOne({ _id: query });
-    res.json(app);
+    const installedApps = await installedAppsCollection.find().toArray();
+    res.send(installedApps);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -98,6 +91,23 @@ app.post('/apps/install', async (req, res) => {
     const doc = req.body;
     const installedApps = await installedAppsCollection.insertOne(doc);
     res.send(installedApps);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.get('/apps/:id', async (req, res) => {
+  try {
+    const appId = req.params.id;
+
+    if (appId.length != 24) {
+      res.status(400).json({ error: 'Invalid ID' });
+      return;
+    }
+    const query = new ObjectId(appId);
+    const app = await appsCollection.findOne({ _id: query });
+    res.json(app);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: 'Internal Server Error' });
