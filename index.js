@@ -48,13 +48,14 @@ client
 //DB & collections
 const database = client.db('heroAppsDB');
 const appsCollection = database.collection('apps');
+const installedAppsCollection = database.collection('installedApps');
 
 //Apps Route
 
 app.get('/apps', async (req, res) => {
   try {
     console.log(req.query);
-    const { limit, skip } = req.query;
+    const { limit = 0, skip = 0 } = req.query;
     console.log(limit, skip);
 
     const apps = await appsCollection
@@ -65,7 +66,10 @@ app.get('/apps', async (req, res) => {
         description: 0,
       })
       .toArray();
-    res.send(apps);
+
+    const count = await appsCollection.countDocuments();
+
+    res.send({ apps, count });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -83,6 +87,17 @@ app.get('/apps/:id', async (req, res) => {
     const query = new ObjectId(appId);
     const app = await appsCollection.findOne({ _id: query });
     res.json(app);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.post('/apps/install', async (req, res) => {
+  try {
+    const doc = req.body;
+    const installedApps = await installedAppsCollection.insertOne(doc);
+    res.send(installedApps);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: 'Internal Server Error' });
