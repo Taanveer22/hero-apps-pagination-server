@@ -53,7 +53,18 @@ const appsCollection = database.collection('apps');
 
 app.get('/apps', async (req, res) => {
   try {
-    const apps = await appsCollection.find().toArray();
+    console.log(req.query);
+    const { limit, skip } = req.query;
+    console.log(limit, skip);
+
+    const apps = await appsCollection
+      .find()
+      .limit(Number(limit))
+      .skip(Number(skip))
+      .project({
+        description: 0,
+      })
+      .toArray();
     res.send(apps);
   } catch (error) {
     console.log(error);
