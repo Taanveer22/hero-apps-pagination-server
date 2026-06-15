@@ -114,6 +114,17 @@ app.get('/apps/:id', async (req, res) => {
   }
 });
 
+app.delete('/apps/install/:id', async (req, res) => {
+  try {
+    const query = { _id: new ObjectId(req.params.id) };
+    const deletedApp = await installedAppsCollection.deleteOne(query);
+    res.send(deletedApp);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Internal Sever Error' });
+  }
+});
+
 // Basic routes
 app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'Hero Apps Server' });
