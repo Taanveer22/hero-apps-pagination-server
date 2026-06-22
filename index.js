@@ -54,17 +54,23 @@ const installedAppsCollection = database.collection('installedApps');
 
 app.get('/apps', async (req, res) => {
   try {
+    const { limit = 10, skip = 0, sortField = 'size', sortOrder = 'asc' } = req.query;
     console.log(req.query);
-    const { limit = 0, skip = 0 } = req.query;
-    console.log(limit, skip);
+    console.log(limit, skip, sortField, sortOrder);
+
+    const sortOption = {};
+    sortOption[sortField] = sortOrder === 'asc' ? 1 : -1;
+
+    console.log('sort option', sortOption);
 
     const apps = await appsCollection
       .find()
-      .limit(Number(limit))
-      .skip(Number(skip))
       .project({
         description: 0,
       })
+      .sort(sortOption)
+      .limit(Number(limit))
+      .skip(Number(skip))
       .toArray();
 
     const count = await appsCollection.countDocuments();
