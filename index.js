@@ -54,17 +54,29 @@ const installedAppsCollection = database.collection('installedApps');
 
 app.get('/apps', async (req, res) => {
   try {
-    const { limit = 10, skip = 0, sortField = 'size', sortOrder = 'asc' } = req.query;
+    // Extract query params with defaults
+    const { limit = 10, skip = 0, sortField = 'size', sortOrder = 'asc', search = '' } = req.query;
     console.log(req.query);
-    console.log(limit, skip, sortField, sortOrder);
 
+    // Build sort option safely
     const sortOption = {};
     sortOption[sortField] = sortOrder === 'asc' ? 1 : -1;
-
     console.log('sort option', sortOption);
+    // if (sortOrder === 'asc') {
+    //   sortOption[sortField] = 1;
+    // } else {
+    //   sortOption[sortField] = -1;
+    // }
 
+    // Build search query
+    let query = {};
+    if (search) {
+      query.title = { $regex: search, $options: 'i' };
+    }
+
+    // Fetch apps with filters
     const apps = await appsCollection
-      .find()
+      .find(query)
       .project({
         description: 0,
       })
@@ -73,7 +85,8 @@ app.get('/apps', async (req, res) => {
       .skip(Number(skip))
       .toArray();
 
-    const count = await appsCollection.countDocuments();
+    // Count total matching documents
+    const count = await appsCollection.countDocuments(query);
 
     res.send({ apps, count });
   } catch (error) {
